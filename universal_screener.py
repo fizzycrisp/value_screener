@@ -29,6 +29,13 @@ SUPPORTED_MARKETS = {
         'sort_by': 'Marcap',
         'top_n': 200
     },
+    'kosdaq': {
+        'name': 'KOSDAQ',
+        'description': '코스닥 시장',
+        'suffix': '.KQ',
+        'sort_by': 'Marcap',
+        'top_n': 200
+    },
     'nasdaq': {
         'name': 'NASDAQ',
         'description': '나스닥 종합지수',
@@ -62,7 +69,7 @@ def get_market_tickers(market: str, top_n: int = None) -> List[str]:
         # 종목 코드에 접미사 추가
         tickers = []
         for _, row in top_stocks.iterrows():
-            if market == 'kospi':
+            if market in ('kospi', 'kosdaq'):
                 ticker = f"{row['Code']}{market_info['suffix']}"
             else:  # nasdaq
                 ticker = f"{row['Symbol']}{market_info['suffix']}"
@@ -147,6 +154,8 @@ def main():
     parser = argparse.ArgumentParser(description='범용 주식 밸류 스크리너')
     parser.add_argument('market', nargs='?', choices=list(SUPPORTED_MARKETS.keys()) + ['list'],
                        help='분석할 시장 (list: 지원 시장 목록)')
+    parser.add_argument('--tickers', nargs='*', help='직접 지정할 티커 목록 (지정 시 market/top 무시)')
+    parser.add_argument('--yes', '-y', action='store_true', help='프롬프트 없이 바로 실행')
     parser.add_argument('--top', type=int, help='상위 N개 종목 (기본값: 시장별 기본값)')
     parser.add_argument('--output', help='CSV 출력 파일 경로')
     parser.add_argument('--report', help='리포트 출력 파일 경로')
@@ -155,19 +164,40 @@ def main():
     
     args = parser.parse_args()
     
-    if args.market == 'list' or args.market is None:
+    if args.market == 'list' and not args.tickers:
         list_supported_markets()
         return
     
-    print(f"=== {SUPPORTED_MARKETS[args.market]['name']} 밸류 스크리너 ===")
-    
-    # 사용자에게 실행 여부 확인
-    top_n = args.top or SUPPORTED_MARKETS[args.market]['top_n']
-    response = input(f"\n{top_n}개 종목을 검사하시겠습니까? (y/N): ")
-    if response.lower() != 'y':
-        print("검사를 취소했습니다.")
+    # 티커 직접 지정 모드
+    if args.tickers:
+        print(f"직접 지정된 {len(args.tickers)}개 티커에 대해 스크리닝을 실행합니다...")
+        # value_screener CLI를 직접 호출
+        sys.argv = [
+            'universal_screener.py',
+            '--source','yfinance',
+            '--md',
+            '--max-workers', str(args.workers),
+            '--timeout', str(args.timeout)
+        ]
+        if args.output:
+            sys.argv += ['--output', args.output]
+        if args.report:
+            sys.argv += ['--report', args.report]
+        for tk in args.tickers:
+            sys.argv += ['--tickers', tk]
+        screener_main()
         return
-    
+
+    print(f"=== {SUPPORTED_MARKETS[args.market]['name']} 밸류 스크리너 ===")
+
+    # 사용자에게 실행 여부 확인 (스킵 옵션 지원)
+    top_n = args.top or SUPPORTED_MARKETS[args.market]['top_n']
+    if not args.yes:
+        response = input(f"\n{top_n}개 종목을 검사하시겠습니까? (y/N): ")
+        if response.lower() != 'y':
+            print("검사를 취소했습니다.")
+            return
+
     # 스크리닝 실행
     run_market_screening(
         market=args.market,
