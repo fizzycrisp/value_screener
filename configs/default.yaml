@@ -1,0 +1,75 @@
+# 저평가 주식 스크리닝 알고리즘 기본 설정
+# BMad 협업으로 구현된 전문적인 투자 분석 시스템
+
+universe:
+  min_market_cap: 5e8          # 최소 시총 (5억 달러)
+  min_adv_usd: 2e6             # 일평균 거래대금 (200만 달러)
+  country_whitelist: [KR, US]  # 허용 국가
+  exclude_sectors: []          # 제외 섹터 (예: ["Utilities", "REITs"])
+
+normalization:
+  winsorize_pct: 0.01          # 상하위 1% 윈저라이즈
+  group_by: ["sector", "size_bucket"]  # 섹터×시가총액 버킷으로 그룹핑
+  missing_value_penalty: -0.2  # 결측치 패널티 (z-score)
+
+# 컴포지트 스코어 가중치
+weights:
+  value: 
+    ey: 0.20                   # Earnings Yield
+    fcfy: 0.10                 # FCF Yield
+    bm: 0.10                   # Book-to-Market
+  quality: 
+    gross_prof: 0.15           # Gross Profitability
+    roic: 0.10                 # ROIC
+    fscore: 0.05               # F-Score
+  accounting: 
+    accruals: -0.07            # Accruals (낮을수록 좋음)
+    noa: -0.05                 # NOA/Assets (낮을수록 좋음)
+    risk: -0.03                # Risk Flags (낮을수록 좋음)
+  investment: 
+    asset_growth: -0.05        # Asset Growth (낮을수록 좋음)
+    net_issuance: -0.05        # Net Issuance (낮을수록 좋음)
+  momentum: 
+    m12m_1m: 0.05              # 12-1 Momentum
+
+# 게이트 규칙 (배제/경고)
+gates:
+  beneish_max: -1.78           # Beneish M-Score 최대값
+  altman_min: 1.8              # Altman Z-Score 최소값
+  allow_restatement: false     # 정정공시 허용 여부
+  max_asset_growth: 0.5        # 자산 성장률 최대값 (50%)
+  max_net_issuance: 0.1        # 순발행 비율 최대값 (10%)
+
+# 포트폴리오 구성
+portfolio:
+  top_pct: 0.25                # 상위 25% 선택
+  max_weight_per_name: 0.07    # 단일 종목 최대 비중 (7%)
+  max_weight_per_sector: 0.20  # 섹터별 최대 비중 (20%)
+  rebalance: "quarterly"       # 분기별 리밸런스
+  band_sigma: 0.25             # 밴딩 시그마 (0.25σ)
+  tc_bps: 20                   # 거래비용 (20bps)
+
+# 백테스트 설정
+backtest:
+  start: "2018-01-01"
+  end: "2025-08-31"
+  report_lag_days: 45          # 재무 데이터 보고 지연 (45일)
+  benchmark: "SPY"             # 벤치마크 (S&P 500)
+  risk_free_rate: 0.02         # 무위험 수익률 (2%)
+
+# 데이터 소스 설정
+data_sources:
+  yfinance:
+    timeout: 10.0              # 타임아웃 (초)
+    max_retries: 3             # 최대 재시도 횟수
+    rate_limit: 0.1            # 요청 간격 (초)
+  cache:
+    enabled: true              # 캐시 사용 여부
+    ttl_hours: 24              # 캐시 TTL (시간)
+    max_size_mb: 1000          # 최대 캐시 크기 (MB)
+
+# 로깅 설정
+logging:
+  level: "INFO"                # 로그 레벨
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/undervaluation.log"  # 로그 파일 경로
