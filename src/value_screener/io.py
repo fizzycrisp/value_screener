@@ -164,9 +164,7 @@ def _create_report_content(df: pd.DataFrame) -> str:
 합리적인 밸류에이션 범위에 있는 종목들입니다:
 
 """
-        content += df_to_markdown(ev_ebit_range_stocks[['ticker', 'name', 'ev_ebit']].head(20))
-        if ev_ebit_range_count > 20:
-            content += f"\n\n*... 및 {ev_ebit_range_count - 20}개 추가 종목*"
+        content += df_to_markdown(ev_ebit_range_stocks[['ticker', 'name', 'ev_ebit']])
         content += "\n\n"
     
     # 상위 10개 종목 (시가총액 기준)

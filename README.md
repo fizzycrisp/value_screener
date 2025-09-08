@@ -90,10 +90,40 @@ CSV를 저장하려면 `--output results.csv`를 사용하세요. 마크다운�
 value-screener --source yfinance --tickers AAPL MSFT --report reports/tech_analysis.md
 
 # KOSPI 200 전체 분석 (자동으로 reports/ 폴더에 리포트 생성)
-python kospi_screener.py
+python universal_screener.py kospi --top 200
 ```
 
 **파일 저장 위치**: 모든 분석 리포트와 CSV 결과 파일은 `reports/` 폴더에 저장됩니다.
+
+## 🌍 범용 스크리너
+
+다양한 시장의 주식을 분석할 수 있는 범용 스크리너를 제공합니다.
+
+### 지원 시장
+- **KOSPI**: 한국 종합주가지수 (시가총액 기준 상위 종목)
+- **NASDAQ**: 나스닥 종합지수 (상위 종목)
+
+### 사용법
+```bash
+# 지원 시장 목록 확인
+python universal_screener.py list
+
+# KOSPI 상위 200개 종목 분석
+python universal_screener.py kospi --top 200
+
+# NASDAQ 상위 500개 종목 분석
+python universal_screener.py nasdaq --top 500
+
+# 사용자 정의 옵션
+python universal_screener.py nasdaq --top 100 --workers 8 --timeout 20
+```
+
+### 옵션
+- `--top N`: 상위 N개 종목 분석 (기본값: 시장별 기본값)
+- `--output PATH`: CSV 출력 파일 경로
+- `--report PATH`: 리포트 출력 파일 경로
+- `--workers N`: 병렬 처리 워커 수 (기본값: 4)
+- `--timeout N`: 종목당 타임아웃 초 (기본값: 15)
 
 ## 제한사항
 - 일부 종목은 Yahoo에서 필드가 누락될 수 있습니다. 도구는 `nan`으로 표시하고 `--no-filter`를 사용하지 않는 한 필터를 건너뜁니다.
@@ -113,6 +143,7 @@ value-screener --source csv --file my_financials.csv --config my_config.yaml --o
 # 분석 리포트 생성
 value-screener --source yfinance --tickers AAPL MSFT GOOGL --report reports/analysis_report.md
 
-# KOSPI 200 종목 전체 분석 (별도 스크립트)
-python kospi_screener.py
+# 범용 스크리너 (KOSPI, NASDAQ 지원)
+python universal_screener.py kospi --top 200
+python universal_screener.py nasdaq --top 500
 ```
