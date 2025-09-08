@@ -45,6 +45,7 @@ value-screener --source {yfinance|csv} [OPTIONS]
   --no-filter                  지표만 출력하고 필터링하지 않음.
   --output PATH                콘솔 외에 결과를 CSV로 저장.
   --md                         일반 텍스트 대신 마크다운 테이블로 출력.
+  --report PATH                분석 리포트를 마크다운 파일로 생성.
   --timeout FLOAT              종목당 타임아웃 (초) (yfinance).
   --max-workers INTEGER        병렬 가져오기 풀 크기 (기본값: 8).
   -q, --quiet                  로그 줄이기.
@@ -69,7 +70,30 @@ value-screener --source {yfinance|csv} [OPTIONS]
 - `ev_ebit`, `fcf_yield`, `roic`, `interest_coverage`, `net_debt_ebitda`,
 - `passed_filters` (True/False)
 
-CSV를 저장하려면 `--output results.csv`를 사용하세요. 마크다운으로 출력하려면 `--md`를 추가하세요.
+CSV를 저장하려면 `--output results.csv`를 사용하세요. 마크다운으로 출력하려면 `--md`를 추가하세요. 상세한 분석 리포트를 생성하려면 `--report report.md`를 사용하세요.
+
+## 📊 분석 리포트 기능
+
+`--report` 옵션을 사용하면 상세한 분석 리포트가 마크다운 형식으로 생성됩니다:
+
+### 리포트 포함 내용
+- **전체 요약**: 총 종목 수, 필터 통과 종목, 통과율
+- **지표별 분석**: EV/EBIT, FCF 수익률, ROIC 등 계산 가능한 지표 통계
+- **필터 통과 종목**: 모든 조건을 만족하는 종목 목록
+- **EV/EBIT 5-12 범위 종목**: 합리적인 밸류에이션 범위의 종목들
+- **시가총액 상위 종목**: 시가총액 기준 상위 종목들
+- **결론 및 권고사항**: 분석 결과 요약 및 투자 시 고려사항
+
+### 리포트 예시
+```bash
+# 개별 종목 분석 리포트
+value-screener --source yfinance --tickers AAPL MSFT --report reports/tech_analysis.md
+
+# KOSPI 200 전체 분석 (자동으로 reports/ 폴더에 리포트 생성)
+python kospi_screener.py
+```
+
+**리포트 저장 위치**: 모든 분석 리포트는 `reports/` 폴더에 저장됩니다.
 
 ## 제한사항
 - 일부 종목은 Yahoo에서 필드가 누락될 수 있습니다. 도구는 `nan`으로 표시하고 `--no-filter`를 사용하지 않는 한 필터를 건너뜁니다.
@@ -85,4 +109,10 @@ value-screener --source yfinance --tickers 005930.KS 000660.KS --no-filter --md
 
 # CSV와 사용자 정의 설정 사용
 value-screener --source csv --file my_financials.csv --config my_config.yaml --output picked.csv
+
+# 분석 리포트 생성
+value-screener --source yfinance --tickers AAPL MSFT GOOGL --report reports/analysis_report.md
+
+# KOSPI 200 종목 전체 분석 (별도 스크립트)
+python kospi_screener.py
 ```

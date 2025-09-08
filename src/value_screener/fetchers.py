@@ -75,7 +75,13 @@ def fetch_yfinance(tickers: List[str], timeout: float = 10.0) -> List[FinancialR
 
             price = _prefer_keys(info, ["last_price","lastPrice","regularMarketPrice","currentPrice"])
             mcap = _prefer_keys(info, ["marketCap","market_cap"])
-            name = _prefer_keys(info, ["shortName","longName","symbol"]) or t
+            
+            # 종목 이름 가져오기 (문자열이므로 별도 처리)
+            name = t  # 기본값은 티커
+            for key in ["longName", "shortName", "symbol"]:  # longName을 우선으로 변경
+                if key in info and info[key] is not None and isinstance(info[key], str):
+                    name = info[key]
+                    break
 
             # Balance Sheet
             bs = None

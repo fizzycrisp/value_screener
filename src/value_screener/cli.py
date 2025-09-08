@@ -6,7 +6,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from .config import load_config
-from .io import df_to_markdown, load_csv, save_csv
+from .io import df_to_markdown, load_csv, save_csv, generate_analysis_report
 from .fetchers import fetch_yfinance, from_csv_row, FinancialRow
 from .screening import build_rows, apply_filters
 
@@ -18,10 +18,11 @@ from .screening import build_rows, apply_filters
 @click.option("--no-filter", is_flag=True, help="Do not filter; only compute metrics.")
 @click.option("--output", type=click.Path(), help="Optional CSV output path.")
 @click.option("--md", is_flag=True, help="Print markdown table.")
+@click.option("--report", type=click.Path(), help="Generate analysis report (markdown file).")
 @click.option("--timeout", type=float, default=10.0, help="Per-ticker timeout (yfinance).")
 @click.option("--max-workers", type=int, default=8, help="Parallel fetch workers.")
 @click.option("-q","--quiet", is_flag=True, help="Reduce logs.")
-def main(source, tickers, file_path, config_path, no_filter, output, md, timeout, max_workers, quiet):
+def main(source, tickers, file_path, config_path, no_filter, output, md, report, timeout, max_workers, quiet):
     cfg = load_config(config_path)
 
     if source == "csv":
@@ -65,3 +66,6 @@ def main(source, tickers, file_path, config_path, no_filter, output, md, timeout
         save_csv(out_df, output)
         if not quiet:
             click.echo(f"Saved CSV to: {output}")
+    
+    if report:
+        generate_analysis_report(out_df, report)
