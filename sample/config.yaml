@@ -1,0 +1,7 @@
+# Thresholds for filters. Any missing field falls back to default.
+ev_ebit_min: 5
+ev_ebit_max: 12
+fcf_yield_min: 0.07
+roic_min: 0.12
+interest_coverage_min: 4
+net_debt_to_ebitda_max: 2
