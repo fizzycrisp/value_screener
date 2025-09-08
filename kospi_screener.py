@@ -46,7 +46,7 @@ def get_kospi200_tickers() -> List[str]:
         print(f"KOSPI 종목 리스트를 가져오는 중 오류 발생: {e}")
         return []
 
-def run_kospi_screening(tickers: List[str], output_file: str = "kospi200_results.csv", 
+def run_kospi_screening(tickers: List[str], output_file: str = "reports/kospi200_results.csv", 
                        report_file: str = "reports/kospi200_report.md", max_workers: int = 4, timeout: float = 15.0):
     """KOSPI 200 종목에 대해 밸류 스크리닝을 실행합니다."""
     

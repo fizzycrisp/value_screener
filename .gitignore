@@ -198,7 +198,7 @@ results.csv
 *.csv
 !sample/*.csv
 
-# Reports folder
+# Reports folder (contains all generated reports and CSV files)
 reports/
 
 # Log files

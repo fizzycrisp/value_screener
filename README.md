@@ -93,7 +93,7 @@ value-screener --source yfinance --tickers AAPL MSFT --report reports/tech_analy
 python kospi_screener.py
 ```
 
-**리포트 저장 위치**: 모든 분석 리포트는 `reports/` 폴더에 저장됩니다.
+**파일 저장 위치**: 모든 분석 리포트와 CSV 결과 파일은 `reports/` 폴더에 저장됩니다.
 
 ## 제한사항
 - 일부 종목은 Yahoo에서 필드가 누락될 수 있습니다. 도구는 `nan`으로 표시하고 `--no-filter`를 사용하지 않는 한 필터를 건너뜁니다.
@@ -108,7 +108,7 @@ value-screener --source yfinance --tickers AAPL MSFT GOOGL NVDA --md
 value-screener --source yfinance --tickers 005930.KS 000660.KS --no-filter --md
 
 # CSV와 사용자 정의 설정 사용
-value-screener --source csv --file my_financials.csv --config my_config.yaml --output picked.csv
+value-screener --source csv --file my_financials.csv --config my_config.yaml --output reports/picked.csv
 
 # 분석 리포트 생성
 value-screener --source yfinance --tickers AAPL MSFT GOOGL --report reports/analysis_report.md
