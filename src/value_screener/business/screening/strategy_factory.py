@@ -8,7 +8,8 @@ from dependency_injector.wiring import inject, Provide
 from .strategies import (
     ValueScreeningStrategy,
     GrowthScreeningStrategy, 
-    QualityScreeningStrategy
+    QualityScreeningStrategy,
+    BuffettScreeningStrategy
 )
 from value_screener.interfaces import ScreeningStrategy
 
@@ -19,7 +20,8 @@ class StrategyFactory:
     _strategies: Dict[str, Type[ScreeningStrategy]] = {
         'value': ValueScreeningStrategy,
         'growth': GrowthScreeningStrategy,
-        'quality': QualityScreeningStrategy
+        'quality': QualityScreeningStrategy,
+        'buffett': BuffettScreeningStrategy
     }
     
     @classmethod

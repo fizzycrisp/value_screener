@@ -9,12 +9,15 @@ from .config import load_config
 from .io import df_to_markdown, load_csv, save_csv, generate_analysis_report
 from .fetchers import fetch_yfinance, from_csv_row, FinancialRow
 from .screening import build_rows, apply_filters
+from .business.screening.strategy_factory import StrategyFactory
 
 @click.command()
 @click.option("--source", type=click.Choice(["yfinance","csv"]), required=True, help="Data source.")
 @click.option("--tickers", multiple=True, help="Tickers (space-separated). Example: AAPL MSFT")
 @click.option("--file", "file_path", type=click.Path(exists=True, dir_okay=False), help="CSV when --source=csv.")
 @click.option("--config", "config_path", type=click.Path(exists=True, dir_okay=False), help="YAML thresholds config.")
+@click.option("--strategy", type=click.Choice(["value","growth","quality","buffett"]), default="value", show_default=True,
+              help="Screening strategy to apply.")
 @click.option("--no-filter", is_flag=True, help="Do not filter; only compute metrics.")
 @click.option("--output", type=click.Path(), help="Optional CSV output path.")
 @click.option("--md", is_flag=True, help="Print markdown table.")
@@ -22,7 +25,7 @@ from .screening import build_rows, apply_filters
 @click.option("--timeout", type=float, default=10.0, help="Per-ticker timeout (yfinance).")
 @click.option("--max-workers", type=int, default=8, help="Parallel fetch workers.")
 @click.option("-q","--quiet", is_flag=True, help="Reduce logs.")
-def main(source, tickers, file_path, config_path, no_filter, output, md, report, timeout, max_workers, quiet):
+def main(source, tickers, file_path, config_path, strategy, no_filter, output, md, report, timeout, max_workers, quiet):
     cfg = load_config(config_path)
 
     if source == "csv":
@@ -34,13 +37,20 @@ def main(source, tickers, file_path, config_path, no_filter, output, md, report,
         tickers = list(tickers)
         if not tickers:
             raise click.UsageError("--tickers is required when --source=yfinance")
-        fin_rows = fetch_yfinance(tickers, timeout=timeout)
+        fin_rows = fetch_yfinance(tickers, timeout=timeout, max_workers=max_workers)
     else:
         raise click.UsageError("Unsupported --source")
 
     df = build_rows(fin_rows)
     if not no_filter:
-        df = apply_filters(df, cfg)
+        # 우선 기존 기본 필터(value 기본값)를 유지하면서, 선택된 전략이 있으면 전략을 적용
+        try:
+            strat = StrategyFactory.create_strategy(strategy)
+            df = strat.apply(df, cfg)
+        except Exception as e:
+            if not quiet:
+                click.echo(f"전략 적용 오류: {e}. 기본 필터를 사용합니다.")
+            df = apply_filters(df, cfg)
 
     # Pretty print
     show_cols = ["ticker","name","price","market_cap","enterprise_value","ev_ebit","fcf_yield","roic","net_debt_ebitda"]

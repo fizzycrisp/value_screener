@@ -3,7 +3,7 @@ from dataclasses import asdict
 from typing import List, Optional, Dict, Any
 import math
 import pandas as pd
-from .metrics import ev_ebit, fcf_yield, roic_approx, net_debt_to_ebitda
+from .metrics import ev_ebit, fcf_yield, roic_approx, net_debt_to_ebitda, interest_coverage
 from .config import ScreenConfig
 from .fetchers import FinancialRow
 
@@ -26,6 +26,7 @@ def build_rows(fin_rows: List[FinancialRow]) -> pd.DataFrame:
         rec["roic"] = roic_approx(fr.ebit, fr.income_tax_expense, fr.pretax_income,
                                   fr.total_debt, fr.total_stockholder_equity, fr.cash_and_equivalents)
         rec["net_debt_ebitda"] = net_debt_to_ebitda(fr.total_debt, fr.cash_and_equivalents, fr.ebitda)
+        rec["interest_coverage"] = interest_coverage(fr.ebit, fr.interest_expense)
 
         records.append(rec)
     df = pd.DataFrame.from_records(records)
